@@ -58,7 +58,6 @@ public:
         }
 
     private:
-        friend class const_iterator;
         Node* node_{nullptr};
     };
 
