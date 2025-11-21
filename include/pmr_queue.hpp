@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <utility>
 
+// Queue container that uses std::pmr::polymorphic_allocator for memory management.
 template <class T>
 class PmrQueue {
 private:
@@ -66,13 +67,34 @@ public:
 
     PmrQueue(const PmrQueue&) = delete;
     PmrQueue& operator=(const PmrQueue&) = delete;
-    PmrQueue(PmrQueue&&) = delete;
-    PmrQueue& operator=(PmrQueue&&) = delete;
+
+    PmrQueue(PmrQueue&& other) noexcept
+        : allocator_(other.allocator_),
+          head_(other.head_),
+          tail_(other.tail_),
+          size_(other.size_) {
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+        other.size_ = 0;
+    }
+
+    PmrQueue& operator=(PmrQueue&& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        destroy_all();
+        allocator_ = other.allocator_;
+        head_ = other.head_;
+        tail_ = other.tail_;
+        size_ = other.size_;
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+        other.size_ = 0;
+        return *this;
+    }
 
     ~PmrQueue() {
-        while (!empty()) {
-            pop();
-        }
+        destroy_all();
     }
 
     template <class... Args>
@@ -131,4 +153,10 @@ private:
     Node* head_{nullptr};
     Node* tail_{nullptr};
     std::size_t size_{0};
+
+    void destroy_all() noexcept {
+        while (!empty()) {
+            pop();
+        }
+    }
 };

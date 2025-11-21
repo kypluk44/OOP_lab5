@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory_resource>
+#include <string_view>
 
 struct Task {
     std::pmr::string title;
